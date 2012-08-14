@@ -29,3 +29,5 @@
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/variant.hpp>
 #include <boost/serialization/weak_ptr.hpp>
+
+#include "unique_ptr.h"
