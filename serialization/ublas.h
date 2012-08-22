@@ -47,8 +47,8 @@ inline void save(Archive& ar, ublas::vector<T, ublas::unbounded_array<T> > const
 {
 	typedef typename ublas::vector<T, ublas::unbounded_array<T> >::size_type size_type;
 	size_type size = t.size();
-	size_t data_size = size * sizeof(double);
-	void * data = const_cast<double*>(t.data().begin());
+	size_t data_size = size * sizeof(T);
+	void * data = const_cast<T*>(t.data().begin());
 
 	ar << BOOST_SERIALIZATION_NVP(size);
 	ar << make_nvp("data", make_binary_object(data, data_size));
@@ -63,8 +63,8 @@ inline void load(Archive& ar, ublas::vector<T,ublas::unbounded_array<T> > & t, u
 	ar >> BOOST_SERIALIZATION_NVP(size);
 
 	t.resize(size);
-	size_t data_size = size * sizeof(double);
-	void * data = const_cast<double*>(t.data().begin());
+	size_t data_size = size * sizeof(T);
+	void * data = const_cast<T*>(t.data().begin());
 
 	ar >> make_nvp("data", make_binary_object(data, data_size));
 }
@@ -83,8 +83,8 @@ inline void save(Archive& ar, ublas::matrix<T, L, ublas::unbounded_array<T> > co
 {
 	typedef typename ublas::matrix<T, L, ublas::unbounded_array<T> >::size_type size_type;
 	size_type size1 = t.size1(), size2 = t.size2();
-	size_t data_size = size1 * size2 * sizeof(double);
-	void * data = const_cast<double*>(t.data().begin());
+	size_t data_size = size1 * size2 * sizeof(T);
+	void * data = const_cast<T*>(t.data().begin());
 
 	ar << BOOST_SERIALIZATION_NVP(size1)
 	   << BOOST_SERIALIZATION_NVP(size2);
@@ -101,8 +101,8 @@ inline void load(Archive& ar, ublas::matrix<T, L, ublas::unbounded_array<T> > & 
 	   >> BOOST_SERIALIZATION_NVP(size2);
 
 	t.resize(size1, size2);
-	size_t data_size = size1 * size2 * sizeof(double);
-	void * data = const_cast<double*>(t.data().begin());
+	size_t data_size = size1 * size2 * sizeof(T);
+	void * data = const_cast<T*>(t.data().begin());
 
 	ar >> make_nvp("data", make_binary_object(data, data_size));
 }
