@@ -2,6 +2,7 @@
 
 #include <array>
 #include <boost/serialization/serialization.hpp>
+#include <boost/serialization/nvp.hpp>
 
 // serialization helper for std::array
 namespace boost {
