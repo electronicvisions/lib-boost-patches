@@ -17,8 +17,8 @@ struct helper_tuple
 		Archive & ar, std::tuple<Args...>& t,
 		unsigned int const version)
 	{
-		ar & make_nvp("value", std::get<N-1>(t));
 		helper_tuple<N-1>::serialize(ar, t, version);
+		ar & make_nvp("value", std::get<N-1>(t));
 	}
 };
 
