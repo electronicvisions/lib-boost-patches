@@ -16,7 +16,7 @@ def configure(cfg):
 
 def build(bld):
     bld (
-            target          = 'boost_serialization_addons',
+            target          = 'boost_serialization',
             use             = ['BOOST_SERIALIZATION_'],
-            export_includes = '..',
+            export_includes = '.',
     )
