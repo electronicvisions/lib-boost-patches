@@ -37,19 +37,6 @@ public:
 	}
 };
 
-
-template<typename T>
-struct is_nvp
-{
-	enum : bool { value = false };
-};
-
-template<typename T>
-struct is_nvp<boost::serialization::nvp<T>>
-{
-	enum : bool { value = true };
-};
-
 } // detail
 
 
@@ -80,8 +67,7 @@ private:
         // If your program fails to compile here, its most likely due to
         // not specifying an nvp wrapper around the variable to
         // be serialized.
-        static_assert(detail::is_nvp<T>::value, "missing NVP wrapper");
-		throw std::runtime_error("this should never happen kind of exception");
+        BOOST_MPL_ASSERT((serialization::is_wrapper< T >));
     }
 
     // special treatment for name-value pairs.
@@ -115,8 +101,17 @@ private:
 	// detail_common_oarchive::save_override calls save functions
 	template<class T>
     void save(T const& t);
+
+	// required overloads for boost serialization
     void save(version_type const& t);
     void save(boost::serialization::item_version_type const& t);
+	void save(boost::serialization::collection_size_type const& t);
+
+	// required overloads for incomplete BSONObjBuilder.append interface
+	void save(long double const& t);
+	void save(long int const& t);
+	void save(long unsigned int const& t);
+	void save(long long unsigned int const& t);
 
 public:
     mongo_oarchive(type& obj, unsigned int flags = 0) :
@@ -195,27 +190,63 @@ void mongo_oarchive::save_override(
 	_builder.back()->append("_tracking", t);
 }
 
+
 template<class T>
 inline
 void mongo_oarchive::save(T const& t)
 {
-	penultimate().append(_name, t);
+	if (_name)
+		penultimate().append(_name, t);
 }
+inline
+void mongo_oarchive::save(long double const& t)
+{
+	assert(_name);
+	penultimate().append(_name, static_cast<double const&>(t));
+}
+inline
+void mongo_oarchive::save(long int const& t)
+{
+	assert(_name);
+	penultimate().appendNumber(_name, static_cast<long long const&>(t));
+}
+inline
+void mongo_oarchive::save(long unsigned int const& t)
+{
+	assert(_name);
+	penultimate().appendNumber(_name, static_cast<size_t const&>(t));
+}
+inline
+void mongo_oarchive::save(long long unsigned int const& t)
+{
+	assert(_name);
+	penultimate().appendNumber(_name, static_cast<size_t const&>(t));
+}
+
 inline
 void mongo_oarchive::save(version_type const& t)
 {
+	assert(_name);
 	save(static_cast<const unsigned int>(t));
 }
 inline
 void mongo_oarchive::save(boost::serialization::item_version_type const& t)
 {
+	assert(_name);
 	save(static_cast<const unsigned int>(t));
+}
+inline
+void mongo_oarchive::save(boost::serialization::collection_size_type const& t)
+{
+	assert(_name);
+	penultimate().appendNumber(_name, static_cast<size_t>(t));
 }
 
 inline
 void mongo_oarchive::save_binary(
 	void const* address, std::size_t count)
 {
+	assert(_name);
 	penultimate().append(_name, static_cast<char const*>(address), count);
 }
 

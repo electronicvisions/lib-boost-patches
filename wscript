@@ -20,3 +20,9 @@ def build(bld):
             use             = ['BOOST_SERIALIZATION_'],
             export_includes = '.',
     )
+
+    bld (
+            target          = 'boost_patches',
+            use             = ['BOOST_SERIALIZATION_'],
+            export_includes = '.',
+    )

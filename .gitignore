@@ -1,0 +1,16 @@
+# build / waf files
+build/
+.waf*
+/waf*
+.lock-waf*
+/core
+
+# binary files
+/bin/*
+/lib/
+
+# Pyhton
+*.pyc
+
+# vmi
+*.sw[pon]
