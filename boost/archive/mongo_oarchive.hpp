@@ -1,10 +1,12 @@
 #pragma once
 
+// Copyright (c) 2012, Sebastian Jeltsch (sjeltsch@kip.uni-heidelberg.de)
+// Distributed under the terms of the GPLv2 or newer
 
-#include <iostream>
 #include <vector>
 #include <cstddef>
 #include <memory>
+#include <cassert>
 
 #include <mongo/client/dbclient.h>
 
@@ -18,18 +20,57 @@ using namespace std;
 
 namespace boost {
 namespace archive {
+namespace detail {
+
+template<typename T>
+class cond_deleter
+{
+private:
+	bool cond;
+public:
+	cond_deleter(bool del = true) : cond(del) {}
+
+	void operator() (T* b)
+	{
+		if (cond)
+			delete b;
+	}
+};
+
+
+template<typename T>
+struct is_nvp
+{
+	enum : bool { value = false };
+};
+
+template<typename T>
+struct is_nvp<boost::serialization::nvp<T>>
+{
+	enum : bool { value = true };
+};
+
+} // detail
+
 
 class mongo_oarchive :
     public detail::common_oarchive<mongo_oarchive>
 {
 private:
-    friend class detail::interface_oarchive<mongo_oarchive>;
-    friend class save_access;
+	friend class detail::interface_oarchive<mongo_oarchive>;
+	friend class save_access;
 
-	mongo::BSONObj& _obj;
-	std::vector<std::unique_ptr<mongo::BSONObjBuilder>> _builder;
+	typedef mongo::BSONObjBuilder type;
+	typedef std::unique_ptr<type, detail::cond_deleter<type>> value_type;
+
+	std::vector<value_type> _builder;
 	char const* _name;
 
+	type& penultimate()
+	{
+		assert(_builder.size()>1);
+		return **(_builder.end()-2);
+	}
 
     // Anything not an attribute and not a name-value pair is an
     // error and should be trapped here.
@@ -39,19 +80,18 @@ private:
         // If your program fails to compile here, its most likely due to
         // not specifying an nvp wrapper around the variable to
         // be serialized.
-        static_assert(serialization::is_wrapper<T>::value, "missing NVP wrapper");
+        static_assert(detail::is_nvp<T>::value, "missing NVP wrapper");
 		throw std::runtime_error("this should never happen kind of exception");
     }
 
     // special treatment for name-value pairs.
-    typedef detail::common_oarchive<mongo_oarchive> detail_common_oarchive;
     template<class T>
     void save_override(boost::serialization::nvp<T> const& t, int)
 	{
 		_name = t.name();
-		_builder.emplace_back(new mongo::BSONObjBuilder);
+		_builder.emplace_back(new type);
 
-		this->detail_common_oarchive::save_override(t.const_value(), 0);
+		detail::common_oarchive<mongo_oarchive>::save_override(t.const_value(), 0);
 
 		mongo::BSONObj obj = _builder.back()->obj();
 		_builder.pop_back();
@@ -62,7 +102,6 @@ private:
 
     // specific overrides for attributes - not name value pairs so we
     // want to trap them before the above "fall through"
-	// TODO: do we want them in the DB, i'm afraid we should
 	void save_override(object_id_type const& t, int);
 	void save_override(object_reference_type const& t, int);
 	void save_override(version_type const& t, int);
@@ -75,32 +114,17 @@ private:
 
 	// detail_common_oarchive::save_override calls save functions
 	template<class T>
-    void save(T const& t)
-	{
-		(*(_builder.end()-2))->append(_name, t);
-    }
-    void save(version_type const& t){ save(static_cast<const unsigned int>(t)); }
-    void save(boost::serialization::item_version_type const& t){ save(static_cast<const unsigned int>(t)); }
-    //void save(const char* t);
-    //void save(const std::string &s);
+    void save(T const& t);
+    void save(version_type const& t);
+    void save(boost::serialization::item_version_type const& t);
 
 public:
-    mongo_oarchive(mongo::BSONObj& obj, unsigned int flags = 0) :
-		_obj(obj), _builder(), _name()
+    mongo_oarchive(type& obj, unsigned int flags = 0) :
+		_builder(), _name()
 	{
-		_builder.emplace_back(new mongo::BSONObjBuilder);
-		//if(0 == (flags & no_header))
-			//;
-		//no_header = 1,  // suppress archive header info
-		//no_codecvt = 2,  // suppress alteration of codecvt facet
-		//no_xml_tag_checking = 4,   // suppress checking of xml tags
-		//no_tracking = 8,           // suppress ALL tracking
-		//flags_last = 8
+		_builder.emplace_back(&obj, detail::cond_deleter<type>(false));
 	}
-    ~mongo_oarchive()
-	{
-		_obj = _builder.back()->obj();
-	}
+    ~mongo_oarchive() {}
 
     void save_binary(void const* address, std::size_t count);
 };
@@ -122,41 +146,77 @@ BOOST_SERIALIZATION_REGISTER_ARCHIVE(boost::archive::mongo_oarchive)
 namespace boost {
 namespace archive {
 
+inline
 void mongo_oarchive::save_override(
 	object_id_type const& t, int)
 {
+	_builder.back()->append("_object_id", t);
 }
+inline
 void mongo_oarchive::save_override(
 	object_reference_type const& t, int)
 {
+	_builder.back()->append("_object_reference", t);
 }
-void mongo_oarchive::save_override(version_type const& t, int)
+inline
+void mongo_oarchive::save_override(
+	version_type const& t, int)
 {
+	_builder.back()->append("_version", t);
 }
-void mongo_oarchive::save_override(class_id_type const& t, int)
+inline
+void mongo_oarchive::save_override(
+	class_id_type const& t, int)
 {
+	_builder.back()->append("_class_id", t);
 }
+inline
 void mongo_oarchive::save_override(
 	class_id_reference_type const& t, int)
 {
+	_builder.back()->append("_class_id_reference", t);
 }
+inline
 void mongo_oarchive::save_override(
 	class_id_optional_type const& t, int)
 {
+	_builder.back()->append("_class_id_optional", t);
 }
+inline
 void mongo_oarchive::save_override(
 	class_name_type const& t, int)
 {
+	_builder.back()->append("_class_name", t);
 }
+inline
 void mongo_oarchive::save_override(
 	tracking_type const& t, int)
 {
+	_builder.back()->append("_tracking", t);
 }
 
+template<class T>
+inline
+void mongo_oarchive::save(T const& t)
+{
+	penultimate().append(_name, t);
+}
+inline
+void mongo_oarchive::save(version_type const& t)
+{
+	save(static_cast<const unsigned int>(t));
+}
+inline
+void mongo_oarchive::save(boost::serialization::item_version_type const& t)
+{
+	save(static_cast<const unsigned int>(t));
+}
+
+inline
 void mongo_oarchive::save_binary(
 	void const* address, std::size_t count)
 {
-	throw std::runtime_error("not implemented");
+	penultimate().append(_name, static_cast<char const*>(address), count);
 }
 
 } // namespace archive
