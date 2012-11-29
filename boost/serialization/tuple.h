@@ -14,7 +14,7 @@ struct helper_tuple
 {
 	template<class Archive, typename... Args>
 	static void serialize(
-		Archive & ar, std::tuple<Args...>& t,
+		Archive& ar, std::tuple<Args...>& t,
 		unsigned int const version)
 	{
 		helper_tuple<N-1>::serialize(ar, t, version);
@@ -27,14 +27,14 @@ struct helper_tuple<0>
 {
 	template<class Archive, typename... Args>
 	static void serialize(
-		Archive &, std::tuple<Args...>&,
+		Archive&, std::tuple<Args...>&,
 		unsigned int const)
 	{}
 };
 
 template<class Archive, typename... Args>
 void serialize(
-	Archive & ar, std::tuple<Args...> & t,
+	Archive& ar, std::tuple<Args...>& t,
 	unsigned int const version)
 {
 	helper_tuple<sizeof...(Args)>::serialize(ar, t, version);

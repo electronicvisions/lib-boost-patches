@@ -1,18 +1,41 @@
 #pragma once
 
-#define BOOST_DYNAMIC_BITSET_DONT_USE_FRIENDS
-#include <boost/dynamic_bitset.hpp>
-#undef BOOST_DYNAMIC_BITSET_DONT_USE_FRIENDS
+#include <bitset>
+#include <string>
 
+#include <boost/serialization/serialization.h>
 #include <boost/serialization/utility.hpp>
+#include <boost/serialization/string.hpp>
+
+#include "boost/serialization/dynamic_bitset.h"
 
 namespace boost {
 namespace serialization {
-template<typename Archiver, typename Block, typename Allocator>
-void serialize(Archiver & ar, boost::dynamic_bitset<Block, Allocator>& bitset, const unsigned int /*version*/)
+
+template<class Archive, size_t N>
+void save(Archive& ar,
+	std::bitset<N> const& t,
+	const unsigned int /* version */)
 {
-	ar & BOOST_SERIALIZATION_NVP(bitset.m_bits)
-	   & BOOST_SERIALIZATION_NVP(bitset.m_num_bits);
+	std::string const bits = t.to_string();
+	ar << BOOST_SERIALIZATION_NVP(bits);
 }
+
+template<class Archive, size_t N>
+void load(Archive& ar,
+	std::bitset<N>& t,
+	const unsigned int /* version */)
+{
+	std::string bits;
+	ar >> BOOST_SERIALIZATION_NVP(bits);
+	t = std::bitset<N>(bits);
+}
+
+template<typename Archive, size_t N>
+void serialize(Archive& ar, std::bitset<N>& t, const unsigned int version)
+{
+	split_free(ar, t, version);
+}
+
 } // namespace serialization
 } // namespace boost

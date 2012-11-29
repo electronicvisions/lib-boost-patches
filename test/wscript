@@ -43,6 +43,7 @@ def build(bld):
         source       = bld.path.ant_glob('*.cc'),
         use          = ['boost_patches', 'BOOST', 'MONGOLIB'],
         install_path = os.path.join('bin', 'test'),
+        includes     = '.',
         **flags
     )
     bld.add_post_fun(summary)

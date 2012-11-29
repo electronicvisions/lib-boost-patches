@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <memory>
 #include <cassert>
+#include <string>
 
 #include <mongo/client/dbclient.h>
 
@@ -62,12 +63,12 @@ private:
     // Anything not an attribute and not a name-value pair is an
     // error and should be trapped here.
     template<class T>
-    void save_override(T& t, BOOST_PFTO int)
+    void save_override(T&, BOOST_PFTO int)
     {
         // If your program fails to compile here, its most likely due to
         // not specifying an nvp wrapper around the variable to
         // be serialized.
-        BOOST_MPL_ASSERT((serialization::is_wrapper< T >));
+        BOOST_MPL_ASSERT((serialization::is_wrapper<T>));
     }
 
     // special treatment for name-value pairs.
@@ -113,10 +114,15 @@ private:
 	void save(long unsigned int const& t);
 	void save(long long unsigned int const& t);
 
+	// required for strings
+	void save(std::string const& s);
+	void save(char const* s);
+
 public:
     mongo_oarchive(type& obj, unsigned int flags = 0) :
 		_builder(), _name()
 	{
+		static_cast<void>(flags);
 		_builder.emplace_back(&obj, detail::cond_deleter<type>(false));
 	}
     ~mongo_oarchive() {}
@@ -241,6 +247,17 @@ void mongo_oarchive::save(boost::serialization::collection_size_type const& t)
 	assert(_name);
 	penultimate().appendNumber(_name, static_cast<size_t>(t));
 }
+inline
+void mongo_oarchive::save(std::string const& s)
+{
+	save_binary(s.c_str(), s.size()+1);
+}
+inline
+void mongo_oarchive::save(char const* s)
+{
+	save_binary(s, std::strlen(s));
+}
+
 
 inline
 void mongo_oarchive::save_binary(
