@@ -17,8 +17,6 @@
 
 #include <boost/archive/detail/abi_prefix.hpp> // must be the last header
 
-using namespace std;
-
 namespace boost {
 namespace archive {
 namespace detail {
@@ -120,6 +118,15 @@ private:
 	void save(char const* s);
 
 public:
+	struct use_array_optimization
+	{
+		template <typename T>
+		struct apply
+		{
+			typedef boost::mpl::true_ type;
+		};
+	};
+
     mongo_oarchive(type& obj, unsigned int flags = 0) :
 		_builder(), _name()
 	{
@@ -129,6 +136,17 @@ public:
     ~mongo_oarchive() {}
 
     void save_binary(void const* address, std::size_t count);
+
+	template<typename T>
+	void save_array(boost::serialization::array<T> const& a, unsigned int x)
+	{
+		using boost::serialization::make_nvp;
+		for (size_t ii = 0; ii<a.count(); ++ii)
+		{
+			std::string s = std::to_string(ii);
+			save_override(make_nvp(s.c_str(), *(a.address()+ii)), x);
+		}
+	}
 };
 
 
@@ -142,6 +160,7 @@ BOOST_SERIALIZATION_REGISTER_ARCHIVE(boost::archive::mongo_oarchive)
 
 #include <boost/archive/detail/abi_suffix.hpp> // pops abi_suffix.hpp pragmas
 
+BOOST_SERIALIZATION_USE_ARRAY_OPTIMIZATION(boost::archive::mongo_oarchive)
 
 
 

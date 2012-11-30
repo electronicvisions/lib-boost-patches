@@ -52,13 +52,16 @@ struct A
 {
 	int a;
 	int b;
+	enum Name { x,y,z };
+	Name n;
 private:
 	friend class boost::serialization::access;
 	template<typename Archive>
 	void serialize(Archive& ar, unsigned int const)
 	{
 		ar & BOOST_SERIALIZATION_NVP(a)
-		   & BOOST_SERIALIZATION_NVP(b);
+		   & BOOST_SERIALIZATION_NVP(b)
+		   & BOOST_SERIALIZATION_NVP(n);
 	}
 };
 
@@ -69,6 +72,10 @@ TEST(MongoOArchive, CustomType)
 
 	A a;
 	mongo << BOOST_SERIALIZATION_NVP(a);
+
+	// serialize named enums is broken
+	ASSERT_TRUE(false);
+	std::cout << builder.obj().toString() << std::endl;
 }
 
 TEST(MongoOArchive, AllMembersRegressionTest)
