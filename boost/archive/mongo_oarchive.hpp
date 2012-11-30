@@ -74,6 +74,12 @@ private:
     template<class T>
     void save_override(boost::serialization::nvp<T> const& t, int)
 	{
+		// if name == NULL then Enum ... seriously!!! WTF!1!!
+		if (t.name() == nullptr) {
+			save_enum(t.const_value());
+			return;
+		}
+
 		_name = t.name();
 		_builder.emplace_back(new type);
 
@@ -116,6 +122,11 @@ private:
 	// required for strings
 	void save(std::string const& s);
 	void save(char const* s);
+
+	// requirest for enum types (null pointer for the win!)
+	template<typename T>
+	void save_enum(T const&) {}
+	void save_enum(int const& e) { save(e);}
 
 public:
 	struct use_array_optimization
@@ -221,50 +232,42 @@ template<class T>
 inline
 void mongo_oarchive::save(T const& t)
 {
-	if (_name)
-		penultimate().append(_name, t);
+	penultimate().append(_name, t);
 }
 inline
 void mongo_oarchive::save(long double const& t)
 {
-	assert(_name);
 	penultimate().append(_name, static_cast<double const&>(t));
 }
 inline
 void mongo_oarchive::save(long int const& t)
 {
-	assert(_name);
 	penultimate().appendNumber(_name, static_cast<long long const&>(t));
 }
 inline
 void mongo_oarchive::save(long unsigned int const& t)
 {
-	assert(_name);
 	penultimate().appendNumber(_name, static_cast<size_t const&>(t));
 }
 inline
 void mongo_oarchive::save(long long unsigned int const& t)
 {
-	assert(_name);
 	penultimate().appendNumber(_name, static_cast<size_t const&>(t));
 }
 
 inline
 void mongo_oarchive::save(version_type const& t)
 {
-	assert(_name);
 	save(static_cast<const unsigned int>(t));
 }
 inline
 void mongo_oarchive::save(boost::serialization::item_version_type const& t)
 {
-	assert(_name);
 	save(static_cast<const unsigned int>(t));
 }
 inline
 void mongo_oarchive::save(boost::serialization::collection_size_type const& t)
 {
-	assert(_name);
 	penultimate().appendNumber(_name, static_cast<size_t>(t));
 }
 inline
@@ -283,7 +286,6 @@ inline
 void mongo_oarchive::save_binary(
 	void const* address, std::size_t count)
 {
-	assert(_name);
 	penultimate().append(_name, static_cast<char const*>(address), count);
 }
 

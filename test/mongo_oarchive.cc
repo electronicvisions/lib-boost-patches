@@ -59,9 +59,10 @@ private:
 	template<typename Archive>
 	void serialize(Archive& ar, unsigned int const)
 	{
+		using namespace boost::serialization;
 		ar & BOOST_SERIALIZATION_NVP(a)
 		   & BOOST_SERIALIZATION_NVP(b)
-		   & BOOST_SERIALIZATION_NVP(n);
+		   & make_nvp("enum", n);
 	}
 };
 
@@ -71,11 +72,13 @@ TEST(MongoOArchive, CustomType)
 	mongo_oarchive mongo(builder);
 
 	A a;
-	mongo << BOOST_SERIALIZATION_NVP(a);
+	a.n = static_cast<A::Name>(666);
+	mongo << boost::serialization::make_nvp("blubb", a);
 
-	// serialize named enums is broken
-	ASSERT_TRUE(false);
-	std::cout << builder.obj().toString() << std::endl;
+	mongo::BSONObj o = builder.obj();
+	int e = o.getField("blubb").embeddedObject().getField("enum").Int();
+
+	ASSERT_EQ(666, e);
 }
 
 TEST(MongoOArchive, AllMembersRegressionTest)
