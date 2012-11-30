@@ -63,12 +63,13 @@ private:
     // Anything not an attribute and not a name-value pair is an
     // error and should be trapped here.
     template<class T>
-    void save_override(T&, BOOST_PFTO int)
+    void save_override(T& t, BOOST_PFTO int x)
     {
         // If your program fails to compile here, its most likely due to
         // not specifying an nvp wrapper around the variable to
         // be serialized.
         BOOST_MPL_ASSERT((serialization::is_wrapper<T>));
+        this->detail::common_oarchive<mongo_oarchive>::save_override(t, x);
     }
 
     // special treatment for name-value pairs.
