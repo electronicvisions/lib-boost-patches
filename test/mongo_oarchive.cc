@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
+#include <iostream>
 
 #include "boost/archive/mongo_oarchive.hpp"
+#include "boost/serialization/string.hpp"
 
 using namespace boost::archive;
 
@@ -54,6 +56,10 @@ struct A
 	int b;
 	enum Name { x,y,z };
 	Name n;
+
+	char const ch [6] = "hello";
+	std::string str = "me string";
+
 private:
 	friend class boost::serialization::access;
 	template<typename Archive>
@@ -62,7 +68,9 @@ private:
 		using namespace boost::serialization;
 		ar & BOOST_SERIALIZATION_NVP(a)
 		   & BOOST_SERIALIZATION_NVP(b)
-		   & make_nvp("enum", n);
+		   & make_nvp("enum", n)
+		   & make_nvp("ch", ch)
+		   & make_nvp("str", str);
 	}
 };
 
@@ -77,6 +85,8 @@ TEST(MongoOArchive, CustomType)
 
 	mongo::BSONObj o = builder.obj();
 	int e = o.getField("blubb").embeddedObject().getField("enum").Int();
+	ASSERT_EQ("hello",  o.getField("blubb").embeddedObject().getField("ch").String());
+	ASSERT_EQ("me string",  o.getField("blubb").embeddedObject().getField("str").String());
 
 	ASSERT_EQ(666, e);
 }

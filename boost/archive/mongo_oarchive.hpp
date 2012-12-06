@@ -121,7 +121,6 @@ private:
 
 	// required for strings
 	void save(std::string const& s);
-	void save(char const* s);
 
 	// requirest for enum types (null pointer for the win!)
 	template<typename T>
@@ -131,7 +130,7 @@ private:
 public:
 	struct use_array_optimization
 	{
-		template <typename T>
+		template<typename T>
 		struct apply
 		{
 			typedef boost::mpl::true_ type;
@@ -159,6 +158,35 @@ public:
 		}
 	}
 };
+
+
+namespace detail {
+
+template<>
+struct save_array_type<mongo_oarchive>
+{
+    template<class T>
+    static void invoke(mongo_oarchive& ar, T const& t)
+	{
+        typedef typename std::remove_extent<T>::type value_type;
+
+        // consider alignment
+        std::size_t c = sizeof(t) / sizeof(value_type);
+
+        boost::serialization::collection_size_type count(c);
+        ar << BOOST_SERIALIZATION_NVP(count);
+        ar << serialization::make_array(static_cast<value_type const*>(&t[0]), count);
+    }
+
+    static void invoke(mongo_oarchive& ar, char const* t)
+	{
+		ar.save_binary(t, std::strlen(t) + 1);
+    }
+};
+
+} // detail
+
+
 
 
 typedef mongo_oarchive naked_mongo_oarchive;
@@ -275,12 +303,6 @@ void mongo_oarchive::save(std::string const& s)
 {
 	save_binary(s.c_str(), s.size()+1);
 }
-inline
-void mongo_oarchive::save(char const* s)
-{
-	save_binary(s, std::strlen(s));
-}
-
 
 inline
 void mongo_oarchive::save_binary(
