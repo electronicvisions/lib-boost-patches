@@ -11,7 +11,8 @@
 #include "boost/archive/binary_iarchive.hpp"
 
 #include "boost/serialization/array.h"
-#include "boost/serialization/bitset.h"
+#include <boost/serialization/bitset.hpp>
+#include "boost/serialization/dynamic_bitset.h"
 #include "boost/serialization/multi_array.h"
 #include "boost/serialization/tuple.h"
 
