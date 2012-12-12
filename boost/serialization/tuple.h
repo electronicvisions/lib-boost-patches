@@ -18,7 +18,7 @@ struct helper_tuple
 		unsigned int const version)
 	{
 		helper_tuple<N-1>::serialize(ar, t, version);
-		std::string n = std::to_string(N);
+		std::string n = std::to_string(N-1);
 		ar & make_nvp(n.c_str(), std::get<N-1>(t));
 	}
 };
