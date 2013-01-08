@@ -6,12 +6,12 @@
 #include <vector>
 #include <cstddef>
 #include <memory>
-#include <cassert>
 #include <string>
 
 #include <mongo/client/dbclient.h>
 // Uh, ugly, this header leaks macros...
 #undef assert
+#include <cassert>
 
 #include <boost/archive/detail/register_archive.hpp>
 #include <boost/serialization/item_version_type.hpp>
