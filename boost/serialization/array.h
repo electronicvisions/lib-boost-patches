@@ -2,6 +2,11 @@
 
 #include <boost/serialization/array.hpp>
 
+namespace std {
+template<typename _Tp, std::size_t _Nm>
+struct array;
+}
+
 // serialization helper for std::array
 namespace boost {
 namespace serialization {
