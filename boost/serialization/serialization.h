@@ -20,8 +20,11 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
+
+#if defined(__ESTER_MPI__)
 #include <boost/mpi/packed_iarchive.hpp>
 #include <boost/mpi/packed_oarchive.hpp>
+#endif
 
 // Some Datatypes
 #include <boost/serialization/set.hpp>
