@@ -1,0 +1,35 @@
+/* Symwaf2icProject File */
+/* vim: set expandtab ts=4 sw=4 ft=groovy foldmethod=marker foldmarker={,}: */
+// :setlocal fillchars=fold:\  foldtext=getline(v:foldstart)
+
+sw = SoftwareJob([
+    // basic job
+    //debug           : true,     // if true, the jobname is postfixed with '-dsldbg' and the job is disabled
+    //enabled         : true,     // if the job should be enabled (will be overridden if debug is true)
+    //space           : 10,       // number of GiBs that must be free on the node for the job to perform, false=no space check
+    //description     : true,     // true=default, false=no descr., text= user defined description
+    
+    // trigger
+    //scripttrigger_schedule  : true, // true=default, false=off, string=userdefined
+    //crontrigger_schedule    : true, // as above
+    
+    // project setup
+    cleanonce       : false,    // if the workspace should be cleaned after each recreation.. TODO; this should be a must?! But what about cleaning due to symwaf2ic updates?
+    distclean       : true,     // perform "waf distclean" prior each job execution
+    //buildshell      : true      // defaults to "waf configure, build and install"
+
+    //blamemail       : true,     // if the job should send mails to vandals, will be overridden to false if debug is true
+    
+    //test_publisher  : true,   // build/test_result/test-*.xml
+    //distribution    : true,   // create artifacts for lib and bin folder
+    
+    queue           : true,     // if the job should be queued after the generator
+])
+
+
+#doc = DocumentationJob(
+#    htmldir     : "build/sthal/doc/html",
+#    docshell    : "./waf configure --disable-doxygen pdf\n./waf doc"
+#)
+
+return "Any message you like..."
