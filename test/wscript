@@ -1,5 +1,18 @@
 #!/usr/bin/env python
-import sys, os
+
+import os
+
+try:
+    from waflib.extras import symwaf2ic
+    from waflib.extras.gtest import summary
+    recurse = lambda *args, **kwargs: None
+    old_waf = False
+except ImportError:
+    from gtest import summary
+    from symwaf2ic import recurse_depends
+    recurse = lambda ctx: recurse_depends(depends, ctx)
+    old_waf = True
+
 
 def options(opt):
     opt.load('g++')
@@ -7,43 +20,49 @@ def options(opt):
     opt.load('gtest')
     opt.recurse('..')
 
+
 def configure(cfg):
     cfg.load('g++')
     cfg.load('boost')
     cfg.load('gtest')
 
     cfg.check_boost(
-            lib='serialization system thread filesystem',
-            uselib_store='BOOST')
+        lib='serialization system thread filesystem',
+        uselib_store='BOOST')
 
     cfg.check_cxx(
-            lib='mongoclient',
-            uselib_store='MONGOLIB')
+        lib='mongoclient',
+        uselib_store='MONGOLIB')
 
     cfg.recurse('..')
+
+
+def depends(ctx):
+    ctx('boost_mongo')
+
 
 def build(bld):
     bld.recurse('..')
 
     flags = {
-        "cxxflags" : [
+        "cxxflags": [
             '-std=c++0x',
             '-g',
             '-O0',
             '-pedantic',
             '-Wall',
             '-Wextra',
-            ],
+        ],
     }
 
-    from gtest import summary
+    from waflib.extras.gtest import summary
     bld(
-        target       = 'test-main',
-        features     = 'gtest cxx cxxprogram',
-        source       = bld.path.ant_glob('*.cc'),
-        use          = ['boost_patches', 'BOOST', 'MONGOLIB'],
-        install_path = os.path.join('bin', 'test'),
-        includes     = '.',
+        target='test-serialization',
+        features='gtest cxx cxxprogram',
+        source=bld.path.ant_glob('*.cc'),
+        use=['boost_patches', 'BOOST', 'MONGOLIB', 'boost-mongo'],
+        install_path=os.path.join('bin', 'test'),
+        includes='.',
         **flags
     )
     bld.add_post_fun(summary)
