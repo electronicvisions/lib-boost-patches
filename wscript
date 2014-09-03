@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 import sys, os
 
+def depends(ctx):
+    ctx('lib-boost-patches', 'test')
+
 def options(opt):
     opt.load('gxx')
     opt.load('boost')
