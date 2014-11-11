@@ -23,7 +23,7 @@ sw = SoftwareJob([
     //test_publisher  : true,   // build/test_result/test-*.xml
     //distribution    : true,   // create artifacts for lib and bin folder
     
-    queue           : true,     // if the job should be queued after the generator
+    queue           : false,     // if the job should be queued after the generator
 ])
 
 
