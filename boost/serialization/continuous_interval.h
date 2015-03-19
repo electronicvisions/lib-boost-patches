@@ -9,7 +9,7 @@ namespace serialization {
 
     template <typename Archive, typename V>
         void save(Archive& ar, boost::icl::continuous_interval<V> const& di, unsigned) {
-            auto bb = di.bounds().bits();
+            boost::icl::bound_type bb = di.bounds().bits();
             V l  = di.lower();
             V u  = di.upper();
 
@@ -20,7 +20,7 @@ namespace serialization {
 
     template <typename Archive, typename V>
         void load(Archive& ar, boost::icl::continuous_interval<V>& di, unsigned) {
-            auto bb = di.bounds().bits();
+            boost::icl::bound_type bb = di.bounds().bits();
             V    l, u;
 
             ar >> BOOST_SERIALIZATION_NVP(bb)
