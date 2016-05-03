@@ -30,16 +30,11 @@ def configure(cfg):
         lib='serialization system thread filesystem',
         uselib_store='BOOST')
 
-    cfg.check_cxx(
-        lib='mongoclient',
-        uselib_store='MONGOLIB')
-
     cfg.recurse('..')
 
 
 def depends(ctx):
-    ctx('boost_mongo')
-
+    pass
 
 def build(bld):
     bld.recurse('..')
@@ -60,7 +55,7 @@ def build(bld):
         target='test-serialization',
         features='gtest cxx cxxprogram',
         source=bld.path.ant_glob('*.cc'),
-        use=['boost_patches', 'BOOST', 'MONGOLIB', 'boost-mongo'],
+        use=['boost_patches', 'BOOST'],
         install_path=os.path.join('bin', 'test'),
         includes='.',
         **flags

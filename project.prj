@@ -16,7 +16,7 @@ sw = SoftwareJob([
     // project setup
     cleanonce       : false,    // if the workspace should be cleaned after each recreation.. TODO; this should be a must?! But what about cleaning due to symwaf2ic updates?
     distclean       : true,     // perform "waf distclean" prior each job execution
-    buildshell      : "module load mongo\n./waf configure\n./waf build\n./waf install", // defaults to "waf configure, build and install"
+    buildshell      : "./waf configure\n./waf build\n./waf install", // defaults to "waf configure, build and install"
 
     //blamemail       : true,     // if the job should send mails to vandals, will be overridden to false if debug is true
     
