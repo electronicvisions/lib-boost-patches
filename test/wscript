@@ -15,14 +15,14 @@ except ImportError:
 
 
 def options(opt):
-    opt.load('g++')
+    opt.load('compiler_cxx')
     opt.load('boost')
     opt.load('gtest')
     opt.recurse('..')
 
 
 def configure(cfg):
-    cfg.load('g++')
+    cfg.load('compiler_cxx')
     cfg.load('boost')
     cfg.load('gtest')
 
