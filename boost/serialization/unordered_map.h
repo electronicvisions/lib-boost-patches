@@ -5,6 +5,9 @@
 
 #include <boost/config.hpp>
 
+#if BOOST_VERSION < 105600
+// serialization helper for std::unordered_map for boost version < 1.56
+
 #include <boost/serialization/utility.hpp>
 #include <boost/serialization/collections_save_imp.hpp>
 #include <boost/serialization/collections_load_imp.hpp>
@@ -96,3 +99,10 @@ inline void serialize(
 
 } // serialization
 } // namespace boost
+
+#else
+
+// boost::serialization 1.56 supports serialization of unordered_map
+#include <boost/serialization/unordered_map.hpp>
+
+#endif // BOOST_VERSION < 105600
