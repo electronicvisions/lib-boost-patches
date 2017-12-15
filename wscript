@@ -15,12 +15,24 @@ def configure(cfg):
     cfg.load('boost')
 
     cfg.check_boost(lib='serialization', uselib_store='BOOST_SERIALIZATION_')
+    cfg.check_boost(stlib='serialization', uselib_store='BOOST_SERIALIZATION_STATIC_')
 
 
 def build(bld):
     bld (
+            target          = 'boost_serialization_inc',
+            export_includes = '.',
+    )
+
+    bld (
             target          = 'boost_serialization',
             use             = ['BOOST_SERIALIZATION_'],
+            export_includes = '.',
+    )
+
+    bld (
+            target          = 'boost_serialization_static',
+            use             = ['BOOST_SERIALIZATION_STATIC_'],
             export_includes = '.',
     )
 
