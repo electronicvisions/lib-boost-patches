@@ -30,6 +30,7 @@ inline void load(
 	tbb::concurrent_unordered_map<Key, Type, Hash, Compare, Allocator> &t,
 	const unsigned int /* file_version */)
 {
+#if BOOST_VERSION <= 105800
 	boost::serialization::stl::load_collection<
 		Archive,
 		tbb::concurrent_unordered_map<Key, Type, Hash, Compare, Allocator>,
@@ -38,6 +39,22 @@ inline void load(
 		boost::serialization::stl::no_reserve_imp<tbb::concurrent_unordered_map<
 			Key, Type, Hash, Compare, Allocator > >
 	>(ar, t);
+#elif BOOST_VERSION >= 105900
+	// API changed (code adapted according to upstream std::deque/vector code)
+	boost::archive::library_version_type const library_version(
+		ar.get_library_version()
+	);
+	// retrieve number of elements
+	item_version_type item_version(0);
+	collection_size_type count;
+	ar >> BOOST_SERIALIZATION_NVP(count);
+	if (boost::archive::library_version_type(3) < library_version) {
+		ar >> BOOST_SERIALIZATION_NVP(item_version);
+	}
+	stl::collection_load_impl(ar, t, count, item_version);
+#else
+#error please implement
+#endif
 }
 
 // split non-intrusive serialization function member into separate
