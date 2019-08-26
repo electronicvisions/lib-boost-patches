@@ -21,7 +21,7 @@ void load(Archive& ar,
 	D size;
 	ar >> make_nvp("start", start)
 	   >> make_nvp("size", size);
-	t = boost::numeric::ublas::basic_range<Z, D>(start, size);
+	t = boost::numeric::ublas::basic_range<Z, D>(start, start + size);
 }
 
 template<typename Archive, typename Z, typename D>
