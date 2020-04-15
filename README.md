@@ -1,4 +1,6 @@
-# Headers wrapping boost headers for gccxml
+# Compatibility improvements and functional extensions for boost
 
-Some boost headers cannot be parsed by gccxml (anymore). This collection
-of headers provides the necessary workarounds for these cases.
+Some boost headers cannot be parsed by older compilers (as used e.g. for gccxml, hardware simulators).
+This collection of headers provides the necessary workarounds for these cases.
+
+Furthermore, additional serializers not available in upstream boost are provided.
