@@ -8,6 +8,9 @@
 #include <boost/serialization/collections_save_imp.hpp>
 #include <boost/serialization/collections_load_imp.hpp>
 #include <boost/serialization/split_free.hpp>
+#if BOOST_VERSION >= 107400
+#include <boost/serialization/library_version_type.hpp>
+#endif
 
 namespace boost {
 namespace serialization {
@@ -41,14 +44,19 @@ inline void load(
 	>(ar, t);
 #elif BOOST_VERSION >= 105900
 	// API changed (code adapted according to upstream std::deque/vector code)
-	boost::archive::library_version_type const library_version(
+#if BOOST_VERSION < 107400
+	typedef boost::archive::library_version_type lib_version_type;
+#else
+	typedef boost::serialization::library_version_type lib_version_type;
+#endif
+	lib_version_type const library_version(
 		ar.get_library_version()
 	);
 	// retrieve number of elements
 	item_version_type item_version(0);
 	collection_size_type count;
 	ar >> BOOST_SERIALIZATION_NVP(count);
-	if (boost::archive::library_version_type(3) < library_version) {
+	if (lib_version_type(3) < library_version) {
 		ar >> BOOST_SERIALIZATION_NVP(item_version);
 	}
 	stl::collection_load_impl(ar, t, count, item_version);
