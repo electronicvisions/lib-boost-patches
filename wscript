@@ -19,25 +19,36 @@ def configure(cfg):
 
 
 def build(bld):
+    bld.install_files(
+        dest = '${PREFIX}/include',
+        files = bld.path.ant_glob('boost/**/*.(h)'),
+        name = 'boost_header',
+        relative_trick = True
+    )
+
     bld (
             target          = 'boost_serialization_inc',
             export_includes = '.',
+            depends_on = 'boost_header'
     )
 
     bld (
             target          = 'boost_serialization',
             use             = ['BOOST_SERIALIZATION_'],
             export_includes = '.',
+            depends_on = 'boost_header'
     )
 
     bld (
             target          = 'boost_serialization_static',
             use             = ['BOOST_SERIALIZATION_STATIC_'],
             export_includes = '.',
+            depends_on = 'boost_header'
     )
 
     bld (
             target          = 'boost_patches',
             use             = ['BOOST_SERIALIZATION_'],
             export_includes = '.',
+            depends_on = 'boost_header'
     )
