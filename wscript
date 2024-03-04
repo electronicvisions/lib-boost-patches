@@ -29,26 +29,23 @@ def build(bld):
     bld (
             target          = 'boost_serialization_inc',
             export_includes = '.',
-            depends_on = 'boost_header'
+            use             = 'boost_header'
     )
 
     bld (
             target          = 'boost_serialization',
-            use             = ['BOOST_SERIALIZATION_'],
+            use             = ['BOOST_SERIALIZATION_', 'boost_header'],
             export_includes = '.',
-            depends_on = 'boost_header'
     )
 
     bld (
             target          = 'boost_serialization_static',
-            use             = ['BOOST_SERIALIZATION_STATIC_'],
+            use             = ['BOOST_SERIALIZATION_STATIC_', 'boost_header'],
             export_includes = '.',
-            depends_on = 'boost_header'
     )
 
     bld (
             target          = 'boost_patches',
-            use             = ['BOOST_SERIALIZATION_'],
+            use             = ['BOOST_SERIALIZATION_', 'boost_header'],
             export_includes = '.',
-            depends_on = 'boost_header'
     )
